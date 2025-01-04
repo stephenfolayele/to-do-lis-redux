@@ -1,6 +1,8 @@
 import { createContext, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { addTask, removeTask, setTasks, removeCompletedTask } from "../sort-lists/taskSlice";
+import { addTask, removeTask, setTasks, toggleTask, removeCompletedTask } from "../sort-lists/taskSlice";
+import { useMediaQuery } from "react-responsive";
+
 
 export const ThemeContext = createContext();
 
@@ -8,7 +10,10 @@ export default function GlobalState ({children})  {
     const [theme, setTheme] = useState("light");
     const [filter, setFilter] = useState('all')
     const [allTodoList, setAllTodoList] = useState([])   
+    const [active, setActive] = useState('all')
     const [remainingTasks, setRemainingTasks] = useState(0)
+
+    const isMobile = useMediaQuery({query: '(max-width: 500px)'})
 
     const tasks = useSelector((state) => state.tasks)
     const dispatch = useDispatch()
@@ -23,11 +28,10 @@ export default function GlobalState ({children})  {
         dispatch(setTasks(storedTasks))
     }, [dispatch]);
 
-
-    // Save theme and tasks and filter to localStorage whenever it changes
+    // Save theme and tasks to localStorage and filter tasks whenever it changes
     useEffect(() => {
         localStorage.setItem("theme", theme);
-        localStorage.setItem('tasks', JSON.stringify(tasks))
+        localStorage.setItem('tasks', JSON.stringify(tasks)) 
         filteredTaskFunct();
         const remainingTasks = tasks.reduce((acc, task) => (!task.completed ? acc + 1 : acc), 0)
         setRemainingTasks(remainingTasks)
@@ -37,7 +41,6 @@ export default function GlobalState ({children})  {
     const toggleTheme = () => {
         setTheme((prevTheme) => (prevTheme === "light" ? "dark" : "light"));
     };
-
     
     const handleAddTask = (textInputed) => {
         if (textInputed.trim() === '') return;
@@ -48,16 +51,12 @@ export default function GlobalState ({children})  {
         dispatch(addTask(newTask))
     }
 
-
     const handleRemoveTask = (id) => {
         dispatch(removeTask(id))
     }
 
-    const toggleTaskCompletion = (activity_id) => {
-        const updatedTasks = tasks.map((task) =>
-        task.id === activity_id? {...task, completed: !task.completed} : task
-        );
-        dispatch(setTasks(updatedTasks))
+    const handleToggleTask = (id) => {
+        dispatch(toggleTask(id))
     }
 
     const filteredTaskFunct = () => {
@@ -73,39 +72,25 @@ export default function GlobalState ({children})  {
         dispatch(removeCompletedTask())        
     }
 
-    const onDragEnd = (event) => {
-        const {active, over} = event;
-
-        if (active.id !== over?.id){
-            const oldIndex = tasks.findIndex((task)=> task.id === active.id);
-            const newIndex =  tasks.findIndex((task)=> task.id === over?.id);
-
-            const reorderedTasks = Array.from(tasks)
-
-            const [removed] = reorderedTasks.splice(oldIndex, 1)
-
-            reorderedTasks.splice(newIndex, 0, removed)
-
-            dispatch(setTasks(reorderedTasks))
-        };
-
-    }
 
     return(
         <ThemeContext.Provider value={{
             theme, 
+            isMobile,
             tasks,
             filter, 
             allTodoList,
+            active,
             remainingTasks,
-            onDragEnd,
+            setActive,
             toggleTheme,
             handleClearCompleted, 
             handleAddTask,
             setFilter,
-            toggleTaskCompletion,
+            handleToggleTask,
             handleRemoveTask}}>{children}</ThemeContext.Provider>
     )
 
 }
+
 

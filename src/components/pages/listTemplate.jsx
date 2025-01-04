@@ -1,46 +1,51 @@
-import { useContext } from "react"
+import { useContext, useState } from "react"
 import { ThemeContext } from "../context";
 import checkIcon from '../../assets/images/icon-check.svg'
 import crossIcon from '../../assets/images/icon-cross.svg'
-import { useDraggable } from "@dnd-kit/core";
 
-export default function ListTemplate({activity, index, totalList}){
+export default function ListTemplate({activity}){
 
-    const { theme, handleRemoveTask, toggleTaskCompletion } = useContext(ThemeContext)
-    
-    const  {attributes, listeners, setNodeRef} = useDraggable({
-            id: activity.id.toString()
-        })
-    
+    const { theme, handleRemoveTask, handleToggleTask, isMobile} = useContext(ThemeContext)
 
+    const [isHovered, setIsoHovered] = useState(false)
+ 
 
     return (
         <div 
-        ref={setNodeRef}
-        {...listeners}
-        {...attributes}
-        className={`flex justify-center items-center text-base w-full border-solid ${index !== totalList? 'border-b' : null} border-b-greyishBlue border-opacity-30
+        onMouseEnter={()=> setIsoHovered(true)}
+        onMouseLeave={()=> setIsoHovered(false)}
+        className={`flex justify-center items-center text-base w-full border-solid border-b border-b-greyishBlue border-opacity-30
         `}>
             <div className={`m-1.5 flex-none h-[30px] w-[30px] p-1 flex justify-center items-center`}>
                 <span 
-                onClick={() => toggleTaskCompletion(activity.id) }
-                className="flex justify-center items-center h-full w-full rounded-full border-solid border-opacity-30 border border-greyishBlue">
-                    
-                    <img src={checkIcon} alt="" />
+                onClick={() => handleToggleTask(activity.id) }
+                className={`flex justify-center items-center h-full w-full rounded-full border border-solid 
+                ${theme === 'light'? 'hover:border-customBlue' : 'hover:border-customPurple'}
+                ${activity.completed? 'bg-gradient-to-b from-customBlue to-customPurple border-0' : 'border-opacity-30 border-greyishBlue'}`
+                }>
+                    {
+                       activity.completed? <img src={checkIcon} alt="Completed" /> : null
+                    }
                 </span>
                 </div>
             <div className={`w-full outline-none pt-[1rem] pb-[.9rem] ${theme === 'light'? 'bg-white text-darkBlueColor' : 'bg-darkBlueColor text-white'}`}>
-                {activity.text}
+                <p className={`
+                ${activity.completed? 'line-through text-opacity-50': null}
+                ${theme === 'light'? 'text-black' : 'text-greyishBlue'}
+                `}>{activity.text}</p>
             </div>
-            <div>
-                <img
-                onClick={(e) => handleRemoveTask(activity.id)}
-                className='p-3' 
-                src={crossIcon} 
-                alt="Clear Icon"/>
+            {
+                isHovered && (
+                <div className="w-10 flex-none">
+                    <img
+                    onClick={(e) => handleRemoveTask(activity.id)}
+                    className='p-3' 
+                    src={crossIcon} 
+                    alt="Clear Icon"/>
             </div>
-               
+            )
+            }
+                      
             </div>
     )
 }
-

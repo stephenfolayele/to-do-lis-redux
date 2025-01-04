@@ -1,49 +1,56 @@
 import { useContext } from "react";
 import { ThemeContext } from "../context";
 import ListTemplate from "./listTemplate";
-import { useDroppable } from "@dnd-kit/core";
 
 export default function Lists(){
 
-    const {theme, handleClearCompleted, remainingTasks ,setFilter, allTodoList} = useContext(ThemeContext)
+    const {theme, setActive, active, handleClearCompleted, remainingTasks ,setFilter, allTodoList, isMobile} = useContext(ThemeContext)
 
-    const {setNodeRef} = useDroppable({
-        id: 'droppable'
-    })
 
     return (
-        <>
+        <div className={`${isMobile? 'flex flex-col gap-7' : null}`}>
             <div 
-            className={`flex flex-col border-none border rounded overflow-hidden ${theme === 'light'? 'bg-white' : 'bg-darkBlue'}`} >
-                
-            <div 
-            ref={setNodeRef}
-            >
+            className={`flex flex-col border-none border overflow-hidden 
+            ${isMobile? 'rounded': 'rounded-t'}
+            ${theme === 'light'? 'bg-white' : 'bg-darkBlue'}`} >
+
                 {
                     allTodoList && allTodoList.length ? 
                     allTodoList.map((eachItemList, index)=> 
-                    <ListTemplate activity={eachItemList} index={index+1} totalList={allTodoList.length}/> ) 
-                    : <div 
-                    className="flex justify-center items-center p-5 w-full border-solid border-b-greyishBlue border-opacity-30">
+                    <ListTemplate 
+                    activity={eachItemList} 
+                    key={index}/> ) 
+                    : 
+                    <div className={`flex justify-center items-center text-black text-opacity-50 p-5 w-full border-b border-solid border-b-greyishBlue border-opacity-30
+                    ${theme === 'light'? 'text-black' : 'text-greyishBlue'}`}>
                         {
                             remainingTasks? <p>Click Button 'All' or 'Active' to see your toDo lists!</p> 
                             : <p>Tasks lists is empty!</p>
                         }
                     </div>
                 }
-                </div>
-            </div>
 
-            <div className={`flex justify-between items-center text-xs p-3 ${theme === 'light'? 'bg-white border-white' : 'bg-darkBlue border-darkBlue'}`}>
-                <span className="flex-none">{remainingTasks} item(s) left</span>
-                <div className="flex justify-center items-center gap-5">
-                    <button onClick={() => setFilter('all')}>All</button>
-                    <button onClick={() => setFilter('notCompleted')}>Active</button>
-                    <button onClick={() => setFilter('completed')}>Completed</button>
+                <div className={`items-center text-xs text-opacity-50 p-3.5 
+                    ${isMobile? 'flex' : 'hidden'} justify-between
+                    ${theme === 'light'? 'bg-white border-white text-black' : 'bg-darkBlue border-greyishBlue text-greyishBlue'}`}>
+                        <span className="">{remainingTasks} item(s) left</span>
+                        <button className={`${active === 'clearCompleted'? 'text-active font-extrabold' : theme==='light'? 'hover:font-bold hover:text-black' : 'hover:font-bold hover:text-white'}`} onClick={() => {setActive('clearCompleted'); handleClearCompleted()}}>Clear Completed</button>
                 </div>
-                <button className="flex-none" onClick={handleClearCompleted}>Clear Completed</button>
+                </div>
+
+            <div className={`flex items-center text-xs text-opacity-50 p-3.5 border-none border rounded 
+            ${theme === 'light'? 'bg-white border-white text-black' : 'bg-darkBlue border-darkBlue text-greyishBlue'}
+            ${isMobile? 'justify-center' : 'justify-between rounded-t-[0]'}`
+            }>
+                <span className={` ${isMobile? 'hidden': 'flex-none'}`}>{remainingTasks} item(s) left</span>
+                <div className="flex justify-center items-center gap-2">
+                    <button className={`${active === 'all'? 'text-active font-extrabold' :  theme==='light'? 'hover:font-bold hover:text-black' : 'hover:font-bold hover:text-white'}`} onClick={() => {setActive('all'); setFilter('all')}}>All</button>
+                    <button className={`${active === 'notCompleted'? 'text-active font-extrabold' : theme ==='light'? 'hover:font-bold hover:text-black' : 'hover:font-bold hover:text-white'}`} onClick={() => {setActive('notCompleted'); setFilter('notCompleted')}}>Active</button>
+                    <button className={`${active === 'completed'? 'text-active font-extrabold' : theme ==='light'? 'hover:font-bold hover:text-black' : 'hover:font-bold hover:text-white'}`} onClick={() => {setActive('completed'); setFilter('completed')}}>Completed</button>
+                </div>
+                <button className={`${isMobile? 'hidden': 'flex-none'} ${active === 'clearCompleted'? 'text-active font-extrabold' : theme==='light'? 'hover:font-bold hover:text-black' : 'hover:font-bold hover:text-white'}`} onClick={() => {setActive('clearCompleted'); handleClearCompleted()}}>Clear Completed</button>
             </div>
-        </>
+        </div>
     )
 
 }
